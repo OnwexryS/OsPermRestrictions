@@ -1,0 +1,221 @@
+#Settings
+
+#Items with this lore can bypass permission check and usable for everyone
+bypassLoreEnabled: true
+bypassLore: 'doesn''t requires permission'
+
+#Definings
+
+#You can add or remove any item. When they used in events like equip event, item which is equipped will be checked
+equip:
+  IRON_BOOTS:
+    enabled: true
+    permission: 'opr.iron_boots'
+    message: ''
+  IRON_LEGGINGS:
+    enabled: true
+    permission: 'opr.iron_leggings'
+    message: ''
+  IRON_CHESTPLATE:
+    enabled: true
+    permission: 'opr.iron_chestplate'
+    message: ''
+  IRON_HELMET:
+    enabled: true
+    permission: 'opr.iron_helmet'
+    message: ''
+  GOLDEN_BOOTS:
+    enabled: true
+    permission: 'opr.golden_boots'
+    message: ''
+  GOLDEN_LEGGINGS:
+    enabled: true
+    permission: 'opr.golden_leggings'
+    message: ''
+  GOLDEN_CHESTPLATE:
+    enabled: true
+    permission: 'opr.golden_chestplate'
+    message: ''
+  GOLDEN_HELMET:
+    enabled: true
+    permission: 'opr.golden_helmet'
+    message: ''
+  DIAMOND_BOOTS:
+    enabled: true
+    permission: 'opr.diamond_boots'
+    message: ''
+  DIAMOND_LEGGINGS:
+    enabled: true
+    permission: 'opr.diamond_leggings'
+    message: ''
+  DIAMOND_CHESTPLATE:
+    enabled: true
+    permission: 'opr.diamond_chestplate'
+    message: ''
+  DIAMOND_HELMET:
+    enabled: true
+    permission: 'opr.diamond_helmet'
+    message: ''
+  NETHERITE_BOOTS:
+    enabled: true
+    permission: 'opr.netherite_boots'
+    message: ''
+  NETHERITE_LEGGINGS:
+    enabled: true
+    permission: 'opr.netherite_leggings'
+    message: ''
+  NETHERITE_CHESTPLATE:
+    enabled: true
+    permission: 'opr.netherite_chestplate'
+    message: ''
+  NETHERITE_HELMET:
+    enabled: true
+    permission: 'opr.netherite_helmet'
+    message: ''
+  ELYTRA:
+    enabled: true
+    permission: 'opr.elytra'
+    message: ''
+
+portal:
+  NETHER_PORTAL:
+    enabled: true
+    permission: 'opr.netherportal'
+    message: ''
+  END_PORTAL:
+    enabled: true
+    permission: 'opr.endportal'
+    message: ''
+
+breakwith:
+  IRON_PICKAXE:
+    enabled: true
+    permission: 'opr.iron_pickaxe'
+    message: ''
+  IRON_AXE:
+    enabled: true
+    permission: 'opr.iron_axe'
+    message: ''
+  IRON_SHOVEL:
+    enabled: true
+    permission: 'opr.iron_shovel'
+    message: ''
+  GOLDEN_PICKAXE:
+    enabled: true
+    permission: 'opr.golden_pickaxe'
+    message: ''
+  GOLDEN_AXE:
+    enabled: true
+    permission: 'opr.golden_axe'
+    message: ''
+  GOLDEN_SHOVEL:
+    enabled: true
+    permission: 'opr.golden_shovel'
+    message: ''
+  DIAMOND_PICKAXE:
+    enabled: true
+    permission: 'opr.diamond_pickaxe'
+    message: ''
+  DIAMOND_AXE:
+    enabled: true
+    permission: 'opr.diamond_axe'
+    message: ''
+  DIAMOND_SHOVEL:
+    enabled: true
+    permission: 'opr.diamond_shovel'
+    message: ''
+  NETHERITE_PICKAXE:
+    enabled: true
+    permission: 'opr.netherite_pickaxe'
+    message: ''
+  NETHERITE_AXE:
+    enabled: true
+    permission: 'opr.netherite_axe'
+    message: ''
+  NETHERITE_SHOVEL:
+    enabled: true
+    permission: 'opr.netherite_shovel'
+    message: ''
+
+hit:
+  IRON_SWORD:
+    enabled: true
+    permission: 'opr.iron_sword'
+    message: ''
+  IRON_AXE:
+    enabled: true
+    permission: 'opr.iron_axe'
+    message: ''
+  GOLDEN_SWORD:
+    enabled: true
+    permission: 'opr.golden_sword'
+    message: ''
+  GOLDEN_AXE:
+    enabled: true
+    permission: 'opr.golden_axe'
+    message: ''
+  DIAMOND_SWORD:
+    enabled: true
+    permission: 'opr.diamond_sword'
+    message: ''
+  DIAMOND_AXE:
+    enabled: true
+    permission: 'opr.diamond_axe'
+    message: ''
+  NETHERITE_SWORD:
+    enabled: true
+    permission: 'opr.netherite_sword'
+    message: ''
+  NETHERITE_AXE:
+    enabled: true
+    permission: 'opr.netherite_axe'
+    message: ''
+  TRIDENT:
+    enabled: true
+    permission: 'opr.trident'
+    message: ''
+
+use:
+  ENDER_PEARL:
+    enabled: true
+    permission: 'opr.ender_pearl'
+    message: ''
+  ANVIL:
+    enabled: true
+    permission: 'opr.anvil'
+    message: ''
+  ENCHANTING_TABLE:
+    enabled: true
+    permission: 'opr.enchanting_table'
+    message: ''
+  BREWING_STAND:
+    enabled: true
+    permission: 'opr.brewing_stand'
+    message: ''
+  BEACON:
+    enabled: true
+    permission: 'opr.beacon'
+    message: ''
+
+consume:
+  ENCHANTED_GOLDEN_APPLE:
+    enabled: true
+    permission: 'opr.enchanted_golden_apple'
+    message: ''
+
+resurrect:
+  TOTEM_OF_UNDYING:
+    enabled: true
+    permission: 'opr.totem_of_undying'
+    message: ''
+
+throwing:
+  TRIDENT:
+    enabled: true
+
+
+
+#Language Settings
+reloadingMessage: '&e&lReloading..'
+reloadedMessage: '&a&lReloaded !'
+noPermisisonMessage: '&f&lYou dont have permission.'

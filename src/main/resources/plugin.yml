@@ -1,0 +1,12 @@
+name: OsPermRestrictions
+version: ${project.version}
+main: com.minerival.develop.ospermrestrictions.main
+api-version: 1.16
+authors: [OnwexryS]
+commands:
+  ospermrestrictions:
+    description: Reloads the config file.
+    aliases: [opr]
+permissions:
+  opr.reload:
+    default: op

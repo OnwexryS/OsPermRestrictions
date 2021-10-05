@@ -214,6 +214,27 @@ throwing:
     enabled: true
 
 
+teleport:
+  world_nether:
+    enabled: true
+    permission: 'opr.nether'
+    message: ''
+  world_the_end:
+    enabled: true
+    permission: 'opr.end'
+    message: ''
+
+pvp:
+  allowPvp:
+    enabled: true
+    permission: 'opr.pvp'
+    message: ''
+  protectFromPvp:
+    enabled: true
+    permission: 'opr.protect'
+    message: ''
+
+
 
 #Language Settings
 reloadingMessage: '&e&lReloading..'

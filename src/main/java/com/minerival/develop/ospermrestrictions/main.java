@@ -1,12 +1,17 @@
 package com.minerival.develop.ospermrestrictions;
 
+import com.minerival.develop.ospermrestrictions.EventPermManagers.EventPermManagerForMaterial;
+import com.minerival.develop.ospermrestrictions.EventPermManagers.EventPermManagerForString;
+import com.minerival.develop.ospermrestrictions.EventPermMaps.EventPermMap;
+import com.minerival.develop.ospermrestrictions.EventPermMaps.EventPermMapForMaterial;
+import com.minerival.develop.ospermrestrictions.EventPermMaps.EventPermMapForString;
 import org.bukkit.*;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityResurrectEvent;
@@ -21,7 +26,8 @@ import java.util.Set;
 public final class main extends JavaPlugin implements Listener {
     Particle.DustOptions dustOptions = new Particle.DustOptions(Color.fromRGB(0, 127, 255), 3);
     Particle.DustOptions dustOptions2 = new Particle.DustOptions(Color.fromRGB(0, 155, 197), 3);
-    EventPermManager eventPermManager;
+    EventPermManagerForMaterial eventPermManagerForMaterial;
+    EventPermManagerForString eventPermManagerForString;
     public static String bypassLore = "";
     public static boolean bypassLoreEnabled = true;
     public String prefix = "&1[&bO's &9PermRestrictions&1] ";
@@ -33,10 +39,11 @@ public final class main extends JavaPlugin implements Listener {
 
     @Override
     public void onEnable() {
-        eventPermManager = new EventPermManager(this);
+        eventPermManagerForMaterial = new EventPermManagerForMaterial(this);
+        eventPermManagerForString = new EventPermManagerForString(this);
         getConfig().options().copyDefaults();
         loadConfig();
-        getServer().getPluginManager().registerEvents(new ArmorListener(getConfig().getStringList("blocked")), this);
+        getServer().getPluginManager().registerEvents(new ArmorListener(), this);
         try{
             //Better way to check for this? Only in 1.13.1+?
             Class.forName("org.bukkit.event.block.BlockDispenseArmorEvent");
@@ -50,34 +57,46 @@ public final class main extends JavaPlugin implements Listener {
     public void loadConfig(){
         saveDefaultConfig();
         reloadConfig();
-        eventPermManager.clearEventPermMaps();
+        eventPermManagerForMaterial.clearEventPermMaps();
         this.bypassLore = getConfig().getString("bypassLore");
         this.bypassLoreEnabled = getConfig().getBoolean("bypassLoreEnabled");
 
 
-        readEventPermMaps(EventTypes.equip);
-        readEventPermMaps(EventTypes.portal);
-        readEventPermMaps(EventTypes.breakwith);
-        readEventPermMaps(EventTypes.hit);
-        readEventPermMaps(EventTypes.use);
-        readEventPermMaps(EventTypes.consume);
-        readEventPermMaps(EventTypes.resurrect);
-        readEventPermMaps(EventTypes.throwing);
+        readEventPermMaps(EventTypes.values());
+    }
 
+    public void readEventPermMaps(EventTypes ... eventTypes){
+        for (EventTypes type : eventTypes){
+            readEventPermMaps(type);
+        }
     }
 
     public void readEventPermMaps(EventTypes eventType){
         String event = eventType.name();
-        Set<String> items = getConfig().getConfigurationSection(event).getKeys(false);
+        Set<String> elements = getConfig().getConfigurationSection(event).getKeys(false);
 
-        for (String readedItem : items){
-            Boolean isEnabled = getConfig().getBoolean(event + "." + readedItem + "." + "enabled");
-            String permission = getConfig().getString(event + "." + readedItem + "." + "permission");
-            String message = getConfig().getString(event + "." + readedItem + "." + "message");
+        for (String element : elements){
+            Boolean isEnabled = getConfig().getBoolean(event + "." + element + "." + "enabled");
+            String permission = getConfig().getString(event + "." + element + "." + "permission");
+            String message = getConfig().getString(event + "." + element + "." + "message");
             if (isEnabled){
-                EventPermMap tempEPM = new EventPermMap(Material.valueOf(readedItem), permission, message, isEnabled);
-                tempEPM.addEvent(EventTypes.valueOf(event));
-                eventPermManager.addItem(tempEPM);
+                Boolean isString = false;
+                switch(eventType){
+                    case teleport:
+                    case pvp:
+                        isString = true;
+                        break;
+                }
+                if (isString){
+                    EventPermMapForString tempEPM = new EventPermMapForString(element, permission, message, isEnabled);
+                    tempEPM.addEvent(EventTypes.valueOf(event));
+                    eventPermManagerForString.addItem(tempEPM);
+                }else{
+                    EventPermMapForMaterial tempEPM = new EventPermMapForMaterial(Material.valueOf(element), permission, message, isEnabled);
+                    tempEPM.addEvent(EventTypes.valueOf(event));
+                    eventPermManagerForMaterial.addItem(tempEPM);
+                }
+
             }
 
         }
@@ -100,20 +119,20 @@ public final class main extends JavaPlugin implements Listener {
         if (e.getPlayer().isOp()){
             return;
         }
-        if (eventPermManager.usableWithoutPerm(e.getNewArmorPiece())){
+        if (eventPermManagerForMaterial.usableWithoutPerm(e.getNewArmorPiece())){
             return;
         }
 
-        Set<EventPermMap> oprMaps = eventPermManager.getItemsFromEvent(EventTypes.equip);
+        Set<EventPermMap> oprMaps = eventPermManagerForMaterial.getItemsFromEvent(EventTypes.equip);
         Player p = e.getPlayer();
 
         for(EventPermMap i : oprMaps){
-            if (i.mat.equals(e.getNewArmorPiece().getType())){
+            if (i.getType().equals(e.getNewArmorPiece().getType())){
                 if(!i.isEnabled()){
                     break;
                 }
-                if(!(p.hasPermission(i.permission))){
-                    p.sendMessage(colorize(i.message));
+                if(!(p.hasPermission(i.getPermission()))){
+                    p.sendMessage(colorize(i.getMessage()));
                     e.setCancelled(true);
                     denyVisualizer(e.getPlayer());
                 }
@@ -132,17 +151,17 @@ public final class main extends JavaPlugin implements Listener {
             return;
         }
 
-        Set<EventPermMap> oprMaps = eventPermManager.getItemsFromEvent(EventTypes.portal);
+        Set<EventPermMap> oprMaps = eventPermManagerForMaterial.getItemsFromEvent(EventTypes.portal);
         Player p = e.getPlayer();
         for(EventPermMap i : oprMaps){
-            if (e.getCause().equals(PlayerTeleportEvent.TeleportCause.valueOf(i.mat.toString()))){
-                if(e.getPlayer().hasPermission(i.permission)){
+            if (e.getCause().equals(PlayerTeleportEvent.TeleportCause.valueOf(i.getType().toString()))){
+                if(p.hasPermission(i.getPermission())){
                     return;
                 }else{
                     e.setCancelled(true);
-                    e.getPlayer().sendMessage(colorize(i.message));
-                    if (i.mat.equals(Material.END_PORTAL)){
-                        pushUpPlayer(e.getPlayer(), e.getFrom());
+                    p.sendMessage(colorize(i.getMessage()));
+                    if (i.getType().equals(Material.END_PORTAL)){
+                        pushUpPlayer(p, e.getFrom());
                     }
                 }
             }
@@ -159,23 +178,89 @@ public final class main extends JavaPlugin implements Listener {
         if (p.isOp()){
             return;
         }
-        if (eventPermManager.usableWithoutPerm(p.getItemInHand())){
+        if (eventPermManagerForMaterial.usableWithoutPerm(p.getItemInHand())){
             return;
         }
 
-        Set<EventPermMap> oprMaps = eventPermManager.getItemsFromEvent(EventTypes.breakwith);
+        Set<EventPermMap> oprMaps = eventPermManagerForMaterial.getItemsFromEvent(EventTypes.breakwith);
         for(EventPermMap i : oprMaps){
-            if (i.mat.equals(p.getItemInHand().getType())){
-                if (p.hasPermission(i.permission)){
+            if (i.getType().equals(p.getItemInHand().getType())){
+                if (p.hasPermission(i.getPermission())){
                     return;
                 }
                 e.setCancelled(true);
                 denyVisualizer(p);
-                p.sendMessage(colorize(i.message));
+                p.sendMessage(colorize(i.getMessage()));
 
             }
         }
     }
+
+
+    @EventHandler
+    public void onWorldChange(PlayerChangedWorldEvent e){
+        Player p = e.getPlayer();
+        Location to = p.getLocation();
+        if (!(p.getGameMode().equals(GameMode.SURVIVAL))){
+            return;
+        }
+        if (p.isOp()){
+            return;
+        }
+
+        Set<EventPermMap> oprMaps = eventPermManagerForString.getItemsFromEvent(EventTypes.teleport);
+        for (EventPermMap i : oprMaps){
+            if (i.getType().equals(to.getWorld().getName())){
+                if (p.hasPermission(i.getPermission())){
+                    return;
+                }
+                p.teleport(e.getFrom().getSpawnLocation());
+                p.sendMessage(colorize(i.getMessage()));
+            }
+        }
+    }
+
+    @EventHandler
+    public void onPvp(EntityDamageByEntityEvent e){
+        if (!(e.getDamager().getType().equals(EntityType.PLAYER))){
+            return;
+        }
+        if (!(e.getEntity().getType().equals(EntityType.PLAYER))){
+            return;
+        }
+
+        Player victim = (Player)e.getEntity();
+        Player attacker = (Player)e.getDamager();
+        if (!(attacker.getGameMode().equals(GameMode.SURVIVAL))){
+            return;
+        }
+        if (!(victim.getGameMode().equals(GameMode.SURVIVAL))){
+            return;
+        }
+        if (attacker.isOp()){
+            return;
+        }
+
+        Set<EventPermMap> oprMaps = eventPermManagerForString.getItemsFromEvent(EventTypes.pvp);
+        for (EventPermMap i : oprMaps){
+            if (i.getType().equals("allowPvp")){
+                if (attacker.hasPermission(i.getPermission())){
+                    return;
+                }
+                e.setCancelled(true);
+                denyVisualizer(attacker);
+                attacker.sendMessage(colorize(i.getMessage()));
+            }else if (i.getType().equals("protectFromPvp")){
+                if (victim.hasPermission(i.getPermission())){
+                    e.setCancelled(true);
+                    denyVisualizer(attacker);
+                    attacker.sendMessage(colorize(i.getMessage()));
+                }
+                return;
+            }
+        }
+    }
+
 
     @EventHandler
     public void onHit(EntityDamageByEntityEvent e){
@@ -190,20 +275,20 @@ public final class main extends JavaPlugin implements Listener {
             return;
         }
         ItemStack item = p.getItemInHand();
-        if (eventPermManager.usableWithoutPerm(item)){
+        if (eventPermManagerForMaterial.usableWithoutPerm(item)){
             return;
         }
 
 
-        Set<EventPermMap> oprMaps = eventPermManager.getItemsFromEvent(EventTypes.hit);
+        Set<EventPermMap> oprMaps = eventPermManagerForMaterial.getItemsFromEvent(EventTypes.hit);
         for(EventPermMap i : oprMaps){
-            if (i.mat.equals(item.getType())){
-                if (p.hasPermission(i.permission)){
+            if (i.getType().equals(item.getType())){
+                if (p.hasPermission(i.getPermission())){
                     return;
                 }
                 e.setCancelled(true);
                 denyVisualizer(p);
-                p.sendMessage(colorize(i.message));
+                p.sendMessage(colorize(i.getMessage()));
             }
         }
     }
@@ -211,11 +296,11 @@ public final class main extends JavaPlugin implements Listener {
     @EventHandler
     public void onInteract(PlayerInteractEvent e){
         Player p = e.getPlayer();
-        Set<EventPermMap> oprMaps = eventPermManager.getItemsFromEvent(EventTypes.use);
+        Set<EventPermMap> oprMaps = eventPermManagerForMaterial.getItemsFromEvent(EventTypes.use);
 
         Boolean isEnderPearl = false;
         if (e.getItem() != null) {
-            if (eventPermManager.usableWithoutPerm(e.getItem())){
+            if (eventPermManagerForMaterial.usableWithoutPerm(e.getItem())){
                 return;
             }
             if (e.getItem().getType().equals(Material.ENDER_PEARL)) {
@@ -231,24 +316,24 @@ public final class main extends JavaPlugin implements Listener {
 
 
         for (EventPermMap i : oprMaps){
-            if (i.mat.equals(Material.ENDER_PEARL) && isEnderPearl){
-                if (p.hasPermission(i.permission)){
+            if (i.getType().equals(Material.ENDER_PEARL) && isEnderPearl){
+                if (p.hasPermission(i.getPermission())){
                     return;
                 }else{
                     e.setCancelled(true);
                     denyVisualizer(p);
-                    e.getPlayer().sendMessage(colorize(i.message));
+                    e.getPlayer().sendMessage(colorize(i.getMessage()));
                 }
             }
 
             if (isInteractedBlock){
-                if (i.mat.equals(block)){
-                    if (p.hasPermission(i.permission)){
+                if (i.getType().equals(block)){
+                    if (p.hasPermission(i.getPermission())){
                         return;
                     }
                     e.setCancelled(true);
                     denyVisualizer(p);
-                    p.sendMessage(colorize(i.message));
+                    p.sendMessage(colorize(i.getMessage()));
                 }
             }
         }
@@ -260,19 +345,19 @@ public final class main extends JavaPlugin implements Listener {
         if (e.getPlayer().isOp()){
             return;
         }
-        if (eventPermManager.usableWithoutPerm(e.getItem())){
+        if (eventPermManagerForMaterial.usableWithoutPerm(e.getItem())){
             return;
         }
 
-        Set<EventPermMap> oprMaps = eventPermManager.getItemsFromEvent(EventTypes.consume);
+        Set<EventPermMap> oprMaps = eventPermManagerForMaterial.getItemsFromEvent(EventTypes.consume);
         for(EventPermMap i : oprMaps){
-            if (i.mat.equals(e.getItem().getType())){
-                if (e.getPlayer().hasPermission(i.permission)){
+            if (i.getType().equals(e.getItem().getType())){
+                if (e.getPlayer().hasPermission(i.getPermission())){
                     return;
                 }
                 e.setCancelled(true);
                 denyVisualizer(e.getPlayer());
-                e.getPlayer().sendMessage(colorize(i.message));
+                e.getPlayer().sendMessage(colorize(i.getMessage()));
             }
         }
 
@@ -290,18 +375,18 @@ public final class main extends JavaPlugin implements Listener {
         if (p.getItemInHand() == null){
             return;
         }
-        if (eventPermManager.usableWithoutPerm(e.getPlayer().getItemInHand())){
+        if (eventPermManagerForMaterial.usableWithoutPerm(e.getPlayer().getItemInHand())){
             return;
         }
-        Set<EventPermMap> oprMaps = eventPermManager.getItemsFromEvent(EventTypes.breakwith);
+        Set<EventPermMap> oprMaps = eventPermManagerForMaterial.getItemsFromEvent(EventTypes.breakwith);
         for(EventPermMap i : oprMaps){
-            if (i.mat.equals(p.getItemInHand().getType())){
-                if (p.hasPermission(i.permission)){
+            if (i.getType().equals(p.getItemInHand().getType())){
+                if (p.hasPermission(i.getPermission())){
                     return;
                 }
                 e.setCancelled(true);
                 denyVisualizer(p);
-                p.sendMessage(colorize(i.message));
+                p.sendMessage(colorize(i.getMessage()));
 
             }
         }
@@ -324,7 +409,7 @@ public final class main extends JavaPlugin implements Listener {
 
          */
 
-        EventPermMap i = eventPermManager.getItemsFromEvent(EventTypes.resurrect).iterator().next();
+        EventPermMap i = eventPermManagerForMaterial.getItemsFromEvent(EventTypes.resurrect).iterator().next();
 
         if (i == null){
             return;
@@ -332,27 +417,27 @@ public final class main extends JavaPlugin implements Listener {
 
 
         if(p.getItemInHand() != null){
-            if (p.getItemInHand().getType().equals(i.mat)){
-                if(eventPermManager.usableWithoutPerm(p.getItemInHand())){
+            if (p.getItemInHand().getType().equals(i.getType())){
+                if(eventPermManagerForMaterial.usableWithoutPerm(p.getItemInHand())){
                     return;
                 }
             }
         }
 
         if(p.getInventory().getItemInOffHand() != null){
-            if(p.getInventory().getItemInOffHand().equals(i.mat)){
-                if(eventPermManager.usableWithoutPerm(p.getInventory().getItemInOffHand())){
+            if(p.getInventory().getItemInOffHand().equals(i.getType())){
+                if(eventPermManagerForMaterial.usableWithoutPerm(p.getInventory().getItemInOffHand())){
                     return;
                 }
             }
         }
 
-        if (p.hasPermission(i.permission)){
+        if (p.hasPermission(i.getPermission())){
             return;
         }
         e.setCancelled(true);
         denyVisualizer(p);
-        p.sendMessage(colorize(i.message));
+        p.sendMessage(colorize(i.getMessage()));
     }
 
     @EventHandler
@@ -367,17 +452,17 @@ public final class main extends JavaPlugin implements Listener {
 
         ItemStack item = p.getInventory().getItem(e.getNewSlot());
 
-        if(eventPermManager.usableWithoutPerm(item)){
+        if(eventPermManagerForMaterial.usableWithoutPerm(item)){
             return;
         }
 
-        Set<EventPermMap> oprMaps = eventPermManager.materials;
+        Set<EventPermMap> oprMaps = eventPermManagerForMaterial.getAllMaterials();
         for(EventPermMap i : oprMaps){
-            if (i.mat.equals(item.getType())){
-                if (p.hasPermission(i.permission)){
+            if (i.getType().equals(item.getType())){
+                if (p.hasPermission(i.getPermission())){
                     return;
                 }
-                p.sendMessage(colorize(i.message));
+                p.sendMessage(colorize(i.getMessage()));
             }
         }
     }
@@ -395,28 +480,27 @@ public final class main extends JavaPlugin implements Listener {
             item = p.getItemInHand();
         }
 
-        Set<EventPermMap> oprMaps = eventPermManager.getItemsFromEvent(EventTypes.throwing);
+        Set<EventPermMap> oprMaps = eventPermManagerForMaterial.getItemsFromEvent(EventTypes.throwing);
 
         for(EventPermMap i : oprMaps){
-            if (i.mat.name().equals(e.getEntityType().name())){
-                if (p.hasPermission(i.permission)){
+            if (((Material)i.getType()).name().equals(e.getEntityType().name())){
+                if (p.hasPermission(i.getPermission())){
                     return;
                 }
                 if(item != null){
-                    if (eventPermManager.usableWithoutPerm(item)){
+                    if (eventPermManagerForMaterial.usableWithoutPerm(item)){
                         return;
                     }
                 }
 
                 e.setCancelled(true);
                 denyVisualizer(p);
-                p.sendMessage(colorize(i.message));
+                p.sendMessage(colorize(i.getMessage()));
             }
 
 
         }
     }
-
 
 
     public void pushBackPlayer(Player p, Location from){

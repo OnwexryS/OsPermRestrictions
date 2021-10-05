@@ -15,14 +15,19 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemBreakEvent;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class ArmorListener implements Listener {
 
     private final List<String> blockedMaterials;
 
-    public ArmorListener(List<String> blockedMaterials) {
-        this.blockedMaterials = blockedMaterials;
+    public ArmorListener(String ... blockedMaterials) {
+        //this.blockedMaterials = blockedMaterials;
+        this.blockedMaterials = new ArrayList<>();
+        for (String blockedMaterial : blockedMaterials){
+           this.blockedMaterials.add(blockedMaterial);
+        }
     }
     //Event Priority is highest because other plugins might cancel the events before we check.
 

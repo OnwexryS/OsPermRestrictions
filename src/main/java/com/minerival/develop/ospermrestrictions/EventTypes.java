@@ -8,10 +8,15 @@ public enum EventTypes {
     use("use"),
     consume("consume"),
     resurrect("resurrect"),
-    throwing("throwing");
+    throwing("throwing"),
+    pvp("pvp"),
+    teleport("teleport");
 
     private final String type;
     EventTypes(String type) {
         this.type = type;
+    }
+    public String getType(){
+        return this.type;
     }
 }

@@ -12,6 +12,7 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityResurrectEvent;
@@ -60,6 +61,8 @@ public final class main extends JavaPlugin implements Listener {
         eventPermManagerForMaterial.clearEventPermMaps();
         this.bypassLore = getConfig().getString("bypassLore");
         this.bypassLoreEnabled = getConfig().getBoolean("bypassLoreEnabled");
+
+        getServer().getConsoleSender().sendMessage(colorize(prefix + "&9loaded successfully"));
 
 
         readEventPermMaps(EventTypes.values());
@@ -313,6 +316,9 @@ public final class main extends JavaPlugin implements Listener {
             block = e.getClickedBlock().getType();
             isInteractedBlock = true;
         }
+        if (e.getAction() == Action.LEFT_CLICK_BLOCK){
+            return;
+        }
 
 
         for (EventPermMap i : oprMaps){
@@ -325,7 +331,6 @@ public final class main extends JavaPlugin implements Listener {
                     e.getPlayer().sendMessage(colorize(i.getMessage()));
                 }
             }
-
             if (isInteractedBlock){
                 if (i.getType().equals(block)){
                     if (p.hasPermission(i.getPermission())){

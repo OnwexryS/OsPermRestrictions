@@ -184,6 +184,14 @@ use:
     enabled: true
     permission: 'opr.anvil'
     message: ''
+  CHIPPED_ANVIL:
+    enabled: true
+    permission: 'opr.anvil'
+    message: ''
+  DAMAGED_ANVIL:
+    enabled: true
+    permission: 'opr.anvil'
+    message: ''
   ENCHANTING_TABLE:
     enabled: true
     permission: 'opr.enchanting_table'

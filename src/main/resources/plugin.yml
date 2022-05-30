@@ -1,7 +1,7 @@
 name: OsPermRestrictions
 version: ${project.version}
 main: com.minerival.develop.ospermrestrictions.main
-api-version: 1.16
+api-version: 1.13
 authors: [OnwexryS]
 commands:
   ospermrestrictions:
